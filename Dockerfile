@@ -1,20 +1,19 @@
 FROM alpine:latest
-LABEL MAINTAINER git-ed <https://github.com/ookangzheng>
-LABEL VERSION 0.0.3
+LABEL MAINTAINER Gsealy "gsealy@outlook.com"
+LABEL VERSION 0.0.1
 
 ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE
 
 ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 
 EXPOSE 53
-EXPOSE 5353
 
 RUN apk update
 RUN apk upgrade
 
 RUN set -ex \
+    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
     && apk add --update --no-cache curl wget ca-certificates jq tzdata \
     && update-ca-certificates \
     && rm -rf /var/cache/apk/*
@@ -32,7 +31,7 @@ RUN if [ "$TARGETPLATFORM" == "linux/arm64" ]; then cd /tmp \
     && dnsproxy --version \
     && rm -rf /tmp/*; fi
 
-ENV ARGS="--cache --cache-min-ttl=30  --cache-max-ttl=300 --cache-optimistic --edns --all-servers --tls-min-version=1.2 --refuse-any -p 53 -p 5353 -u quic://dns.adguard.com -u tls://1.1.1.2 -u tls://9.9.9.9 -u https://dns.adguard.com/dns-query -f tcp://9.9.9.11:9953 -b 8.8.8.8 -b 1.0.0.1 -f 94.140.14.14"
+ENV ARGS="-u=https://doh-jp.blahdns.com/dns-query -u https://dns.google/dns-query -u https://223.5.5.5/dns-query -u quic://dot-sg.blahdns.com:784 -f 94.140.14.14:53 -f 94.140.14.14:8853 -b 9.9.9.9:9953 -b 9.9.9.9:53 --all-servers --tls-min-version=1.2 --refuse-any -p 53 --cache --cache-min-ttl=30 --cache-max-ttl=300 --cache-optimistic --edns"
 
 ENV ARGS_SP="-u=[/github.com/]tcp://80.80.80.80 -u=[/githubassets.com/]tcp://80.80.80.80 -u=[/githubusercontent.com/]tcp://80.80.80.80"
 
